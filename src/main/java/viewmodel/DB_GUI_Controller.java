@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -30,6 +31,8 @@ import java.util.ResourceBundle;
 public class DB_GUI_Controller implements Initializable {
 
     @FXML
+    Button addBtn, editBtn, deleteBtn;
+    @FXML
     TextField first_name, last_name, department, major, email, imageURL;
     @FXML
     ImageView img_view;
@@ -43,6 +46,17 @@ public class DB_GUI_Controller implements Initializable {
     private TableColumn<Person, String> tv_fn, tv_ln, tv_department, tv_major, tv_email;
     private final DbConnectivityClass cnUtil = new DbConnectivityClass();
     private final ObservableList<Person> data = cnUtil.getData();
+
+    /*
+    ToDo 1. Disable the "Edit" and "Delete" button unless a record is selected from the table view.
+    Todo 2. The "Add" button should be enabled only if the form fields contain correct information.
+    Todo 3. Menu items corresponding to actions should be grayed out if the required selection is not made.
+     */
+
+
+
+
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -151,12 +165,23 @@ public class DB_GUI_Controller implements Initializable {
     @FXML
     protected void selectedItemTV(MouseEvent mouseEvent) {
         Person p = tv.getSelectionModel().getSelectedItem();
-        first_name.setText(p.getFirstName());
+        if (p==null) {
+            editBtn.setDisable(true);
+            deleteBtn.setDisable(true);
+            return;
+        }
+        first_name.setText(p.getFirstName());//Todo find why p could be null.
         last_name.setText(p.getLastName());
         department.setText(p.getDepartment());
         major.setText(p.getMajor());
         email.setText(p.getEmail());
         imageURL.setText(p.getImageURL());
+        checkInputField();
+
+        editBtn.setDisable(false);
+        deleteBtn.setDisable(false);
+
+
     }
 
     public void lightTheme(ActionEvent actionEvent) {
@@ -212,6 +237,23 @@ public class DB_GUI_Controller implements Initializable {
             MyLogger.makeLog(
                     results.fname + " " + results.lname + " " + results.major);
         });
+    }
+
+    public void checkInputField() {
+        //Todo check each field with regex validation.
+        boolean isInvalid =
+                first_name.getText().isEmpty()
+                || last_name.getText().isEmpty()
+                || department.getText().isEmpty()
+                || major.getText().isEmpty()
+                || email.getText().isEmpty()
+                || imageURL.getText().isEmpty();
+        addBtn.setDisable(isInvalid);
+    }
+
+    @FXML
+    public void inputFieldUpdated(KeyEvent keyEvent) {
+        checkInputField();
     }
 
     private static enum Major {Business, CSC, CPIS}

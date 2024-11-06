@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="920.0" styleClass="anchor_pane" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="viewmodel.DB_GUI_Controller">
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="920.0" styleClass="anchor_pane" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="viewmodel.DB_GUI_Controller">
     <children>
         <BorderPane fx:id="borderPane" layoutX="-2.0" layoutY="-3.0" prefHeight="597.0" prefWidth="908.0">
             <top>
@@ -74,32 +74,32 @@
          <right>
                 <VBox prefHeight="540.0" prefWidth="202.0" styleClass="text_field_pane" BorderPane.alignment="CENTER">
                     <children>
-                        <TextField fx:id="first_name" promptText="First Name" styleClass="text_field">
+                        <TextField fx:id="first_name" onKeyTyped="#inputFieldUpdated" promptText="First Name" styleClass="text_field">
                             <VBox.margin>
                                 <Insets left="10.0" right="10.0" top="5.0" />
                             </VBox.margin>
                         </TextField>
-                        <TextField fx:id="last_name" promptText="Last Name" styleClass="text_field">
+                        <TextField fx:id="last_name" onKeyTyped="#inputFieldUpdated" promptText="Last Name" styleClass="text_field">
                             <VBox.margin>
                                 <Insets left="10.0" right="10.0" top="5.0" />
                             </VBox.margin>
                         </TextField>
-                        <TextField fx:id="department" promptText="Department" styleClass="text_field">
+                        <TextField fx:id="department" onKeyTyped="#inputFieldUpdated" promptText="Department" styleClass="text_field">
                             <VBox.margin>
                                 <Insets left="10.0" right="10.0" top="5.0" />
                             </VBox.margin>
                         </TextField>
-                        <TextField fx:id="major" promptText="Major" styleClass="text_field">
+                        <TextField fx:id="major" onKeyTyped="#inputFieldUpdated" promptText="Major" styleClass="text_field">
                             <VBox.margin>
                                 <Insets left="10.0" right="10.0" top="5.0" />
                             </VBox.margin>
                         </TextField>
-                        <TextField fx:id="email" promptText="Email" styleClass="text_field">
+                        <TextField fx:id="email" onKeyTyped="#inputFieldUpdated" promptText="Email" styleClass="text_field">
                             <VBox.margin>
                                 <Insets left="10.0" right="10.0" top="5.0" />
                             </VBox.margin>
                         </TextField>
-                        <TextField fx:id="imageURL" promptText="imageURL" styleClass="text_field">
+                        <TextField fx:id="imageURL" onKeyTyped="#inputFieldUpdated" promptText="imageURL" styleClass="text_field">
                             <VBox.margin>
                                 <Insets left="10.0" right="10.0" top="5.0" />
                             </VBox.margin>
@@ -114,17 +114,17 @@
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </VBox.margin>
                         </Button>
-                        <Button fx:id="addBtn" mnemonicParsing="false" onAction="#addNewRecord" styleClass="db_btn" text="Add">
+                        <Button fx:id="addBtn" disable="true" mnemonicParsing="false" onAction="#addNewRecord" styleClass="db_btn" text="Add">
                             <VBox.margin>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </VBox.margin>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#deleteRecord" styleClass="db_btn" text="Delete">
+                        <Button fx:id="deleteBtn" disable="true" mnemonicParsing="false" onAction="#deleteRecord" styleClass="db_btn" text="Delete">
                             <VBox.margin>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </VBox.margin>
                         </Button>
-                        <Button mnemonicParsing="false" onAction="#editRecord" styleClass="db_btn" text="Edit">
+                        <Button fx:id="editBtn" disable="true" mnemonicParsing="false" onAction="#editRecord" styleClass="db_btn" text="Edit">
                             <VBox.margin>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </VBox.margin>
