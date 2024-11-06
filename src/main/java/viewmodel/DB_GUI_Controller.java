@@ -53,11 +53,6 @@ public class DB_GUI_Controller implements Initializable {
     Todo 3. Menu items corresponding to actions should be grayed out if the required selection is not made.
      */
 
-
-
-
-
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
@@ -94,6 +89,9 @@ public class DB_GUI_Controller implements Initializable {
         major.setText("");
         email.setText("");
         imageURL.setText("");
+        addBtn.setDisable(true);
+        editBtn.setDisable(true);
+        deleteBtn.setDisable(true);
     }
 
     @FXML
@@ -176,12 +174,10 @@ public class DB_GUI_Controller implements Initializable {
         major.setText(p.getMajor());
         email.setText(p.getEmail());
         imageURL.setText(p.getImageURL());
-        checkInputField();
+        checkInputFields();
 
         editBtn.setDisable(false);
         deleteBtn.setDisable(false);
-
-
     }
 
     public void lightTheme(ActionEvent actionEvent) {
@@ -239,7 +235,7 @@ public class DB_GUI_Controller implements Initializable {
         });
     }
 
-    public void checkInputField() {
+    public void checkInputFields() {
         //Todo check each field with regex validation.
         boolean isInvalid =
                 first_name.getText().isEmpty()
@@ -253,7 +249,7 @@ public class DB_GUI_Controller implements Initializable {
 
     @FXML
     public void inputFieldUpdated(KeyEvent keyEvent) {
-        checkInputField();
+        checkInputFields();
     }
 
     private static enum Major {Business, CSC, CPIS}

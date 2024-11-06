@@ -1,0 +1,7 @@
+.table-view .cell {
+    -fx-border-width: 0.0;
+}
+
+.table-row-cell:filled .cell {
+    -fx-border-width: 0.3;
+}

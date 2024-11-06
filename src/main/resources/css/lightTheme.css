@@ -59,15 +59,18 @@
    -fx-font-weight: bold;
    -fx-alignment: CENTER_LEFT;
 }
-.table-view .cell{
+/* Empty cells should not show */
+.table-view .cell {
    -fx-cell-size: 35;
   -fx-alignment: center-left;
   -fx-background-color: #FFFFFF;
-  -fx-border-color: #29292D;
+  -fx-border-color: #000000;
   -fx-text-fill: black;
   -fx-alignment: CENTER_LEFT;
-
 }
+
+
+
 .table-row-cell:selected {
    -fx-background-color: whitesmoke;
    -fx-text-background-color:  #33FF55;

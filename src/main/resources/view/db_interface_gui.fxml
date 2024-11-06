@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="920.0" styleClass="anchor_pane" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="viewmodel.DB_GUI_Controller">
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="920.0" styleClass="anchor_pane" stylesheets="@../css/globalStyling.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="viewmodel.DB_GUI_Controller">
     <children>
         <BorderPane fx:id="borderPane" layoutX="-2.0" layoutY="-3.0" prefHeight="597.0" prefWidth="908.0">
             <top>
