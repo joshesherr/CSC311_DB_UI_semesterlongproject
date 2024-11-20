@@ -1,9 +1,12 @@
 package viewmodel;
 
+import com.azure.storage.blob.BlobClient;
 import dao.DbConnectivityClass;
+import dao.StorageUploader;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,21 +22,27 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import model.Major;
 import model.Person;
 import service.MyLogger;
 
-import java.io.File;
+import java.io.*;
 import java.net.URL;
-import java.time.LocalDate;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.Scanner;
 
 public class DB_GUI_Controller implements Initializable {
 
+    StorageUploader store = new StorageUploader();
+    public ProgressIndicator progressBar;
     @FXML
     Button addBtn, editBtn, deleteBtn;
     @FXML
-    TextField first_name, last_name, department, major, email, imageURL;
+    TextField first_name, last_name, department, email, imageURL;
+    @FXML
+    ComboBox<String> major;
     @FXML
     ImageView img_view;
     @FXML
@@ -66,19 +75,23 @@ public class DB_GUI_Controller implements Initializable {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        tv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        ObservableList<String> li = FXCollections.observableArrayList();
+        for (Major v :  Major.values()) li.add(v.getMajorName());
+        major.setItems(li);
+
     }
 
     @FXML
     protected void addNewRecord() {
-
             Person p = new Person(first_name.getText(), last_name.getText(), department.getText(),
-                    major.getText(), email.getText(), imageURL.getText());
+                    Major.values()[major.getSelectionModel().getSelectedIndex()], email.getText(), imageURL.getText());
             cnUtil.insertUser(p);
-            cnUtil.retrieveId(p);
             p.setId(cnUtil.retrieveId(p));
             data.add(p);
             clearForm();
-
     }
 
     @FXML
@@ -86,7 +99,7 @@ public class DB_GUI_Controller implements Initializable {
         first_name.setText("");
         last_name.setText("");
         department.setText("");
-        major.setText("");
+        major.setValue(null);
         email.setText("");
         imageURL.setText("");
         addBtn.setDisable(true);
@@ -131,7 +144,7 @@ public class DB_GUI_Controller implements Initializable {
         Person p = tv.getSelectionModel().getSelectedItem();
         int index = data.indexOf(p);
         Person p2 = new Person(index + 1, first_name.getText(), last_name.getText(), department.getText(),
-                major.getText(), email.getText(),  imageURL.getText());
+                Major.values()[major.getSelectionModel().getSelectedIndex()], email.getText(),  imageURL.getText());
         cnUtil.editUser(p.getId(), p2);
         data.remove(p);
         data.add(index, p2);
@@ -152,8 +165,40 @@ public class DB_GUI_Controller implements Initializable {
         File file = (new FileChooser()).showOpenDialog(img_view.getScene().getWindow());
         if (file != null) {
             img_view.setImage(new Image(file.toURI().toString()));
+            Task<Void> uploadTask = createUploadTask(file, progressBar);
+            progressBar.progressProperty().bind(uploadTask.progressProperty());
+            new Thread(uploadTask).start();
         }
     }
+
+    private Task<Void> createUploadTask(File file, ProgressIndicator progressBar) {
+        return new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                BlobClient blobClient = store.getContainerClient().getBlobClient(file.getName());
+                long fileSize = Files.size(file.toPath());
+                long uploadedBytes = 0;
+
+                try (FileInputStream fileInputStream = new FileInputStream(file);
+                     OutputStream blobOutputStream = blobClient.getBlockBlobClient().getBlobOutputStream()) {
+
+                    byte[] buffer = new byte[1024 * 1024]; // 1 MB buffer size
+                    int bytesRead;
+
+                    while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                        blobOutputStream.write(buffer, 0, bytesRead);
+                        uploadedBytes += bytesRead;
+
+                        // Calculate and update progress as a percentage
+                        int progress = (int) ((double) uploadedBytes / fileSize * 100);
+                        updateProgress(progress, 100);
+                    }
+                }
+                return null;
+            }
+        };
+    }
+
 
     @FXML
     protected void addRecord() {
@@ -168,13 +213,13 @@ public class DB_GUI_Controller implements Initializable {
             deleteBtn.setDisable(true);
             return;
         }
-        first_name.setText(p.getFirstName());//Todo find why p could be null.
+        first_name.setText(p.getFirstName());
         last_name.setText(p.getLastName());
         department.setText(p.getDepartment());
-        major.setText(p.getMajor());
+        major.setValue(p.getMajor().getMajorName());
         email.setText(p.getEmail());
         imageURL.setText(p.getImageURL());
-        checkInputFields();
+        formValidation();
 
         editBtn.setDisable(false);
         deleteBtn.setDisable(false);
@@ -235,27 +280,143 @@ public class DB_GUI_Controller implements Initializable {
         });
     }
 
-    public void checkInputFields() {
-        //Todo check each field with regex validation.
-        boolean isInvalid =
-                first_name.getText().isEmpty()
-                || last_name.getText().isEmpty()
-                || department.getText().isEmpty()
-                || major.getText().isEmpty()
-                || email.getText().isEmpty()
-                || imageURL.getText().isEmpty();
-        addBtn.setDisable(isInvalid);
+    private static final int
+    FIRST_NAME=0,
+    LAST_NAME=1,
+    DEPARTMENT=2,
+    MAJOR=3,
+    EMAIL=4,
+    IMAGE_URL=5;
+    /**
+     * @return A number whose bits represent which
+     * elements in the form are invalid.
+     */
+    public int checkInputFields() {
+        int i=0;
+        i += inputValidation(first_name.getText(),FIRST_NAME)
+                ?0:(int)Math.pow(2,FIRST_NAME);
+        i += inputValidation(first_name.getText(),LAST_NAME)
+                ?0:(int)Math.pow(2,LAST_NAME);
+        i += inputValidation(department.getText(),DEPARTMENT)
+                ?0:(int)Math.pow(2,DEPARTMENT);
+        i += (major.getValue()!=null)
+                ?0:(int)Math.pow(2,MAJOR);
+        i += inputValidation(email.getText(),EMAIL)
+                ?0:(int)Math.pow(2,EMAIL);
+        i += inputValidation(imageURL.getText(),IMAGE_URL)
+                ?0:(int)Math.pow(2,IMAGE_URL);
+        return i;
+    }
+
+    /**
+     *
+     * @param s the string being validated.
+     * @param validationType which validation method to use.
+     * @return True or False depending on if the string passed the tests.
+     */
+    public boolean inputValidation(String s, int validationType) {
+        return switch (validationType) {
+            case FIRST_NAME, LAST_NAME -> s.matches("^[^ ±!@£$%^&*_+§¡€#¢§¶•ªº«\\\\/<>?:;|=.,]{1,20}$");
+            case DEPARTMENT -> s.matches("^[^±!@£$%^&*_+§¡€#¢§¶•ªº«\\\\/<>?:;|=.,]{1,}$");
+            case MAJOR -> {for (Major m : Major.values()) {if (m.equals(s)) yield true;}yield false;}
+            case EMAIL -> s.matches("^(?!\\.)[\\w\\-_.]*[^.]@farmingdale.edu$");
+            case IMAGE_URL -> s.matches("([^?#]*\\/)?([^?#]*\\.([Jj][Pp][Ee]?[Gg]|[Pp][Nn][Gg]|[Gg][Ii][Ff]))(?:\\?([^#]*))?(?:#(.*))?$");
+            default -> false;
+        };
+    }
+
+    private void formValidation() {
+        int invalidBits=checkInputFields();
+        //region example
+//        if ( (invalidBits & (1<<FIRST_NAME) )!=0 ) System.out.println("First Name is invalid");
+//        if ( (invalidBits & (1<<LAST_NAME) )!=0 ) System.out.println("Last Name is invalid");
+//        if ( (invalidBits & (1<<DEPARTMENT) )!=0 ) System.out.println("Department Name is invalid");
+//        if ( (invalidBits & (1<<MAJOR) )!=0 ) System.out.println("Major Name is invalid");
+//        if ( (invalidBits & (1<<EMAIL) )!=0 ) System.out.println("Email is invalid");
+//        if ( (invalidBits & (1<<IMAGE_URL) )!=0 ) System.out.println("Image is invalid");
+        //endregion
+        addBtn.setDisable(invalidBits!=0);// if any bits are set, disable the add and edit button
+        editBtn.setDisable(invalidBits!=0);
     }
 
     @FXML
-    public void inputFieldUpdated(KeyEvent keyEvent) {
-        checkInputFields();
+    protected void inputFieldUpdated(KeyEvent keyEvent) {
+        formValidation();
     }
 
-    private static enum Major {Business, CSC, CPIS}
+    //TODO and function to import and export csv
+    public void importCSV(ActionEvent actionEvent) {
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Export as CSV");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Comma Separated List", "*.csv"));
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        File file = fileChooser.showOpenDialog(tv.getScene().getWindow());
+
+        if (file == null) return;
+
+        try {
+            Scanner csvReader = new Scanner(file);
+            csvReader.next();
+            csvReader.useDelimiter("\n");
+            cnUtil.deleteAllRecords();
+            data.clear();
+
+            while (csvReader.hasNext()) {
+                Scanner tokens = new Scanner(csvReader.next());
+                tokens.useDelimiter(",");
+
+                String firstName=tokens.next(), lastName=tokens.next(), department=tokens.next(), major=tokens.next(), email=tokens.next(), imageUrl=tokens.next();
+                boolean valid = inputValidation(firstName, FIRST_NAME)
+                        && inputValidation(lastName, LAST_NAME)
+                        && inputValidation(department, DEPARTMENT)
+                        && inputValidation(major, MAJOR)
+                        && inputValidation(email, EMAIL)
+                        && inputValidation(imageUrl, IMAGE_URL);
+
+                if (!valid) throw new Exception("Invalid CSV Data.");
+
+                Person p = new Person(firstName,lastName,department,Major.valueOf(major),email,imageUrl);
+                cnUtil.insertUser(p);
+                p.setId(cnUtil.retrieveId(p));
+                data.add(p);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public void exportCSV(ActionEvent actionEvent) {
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Export as CSV");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Comma Separated List", "*.csv"));
+        fileChooser.setInitialFileName("User-Table.csv");
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        File file = fileChooser.showSaveDialog(tv.getScene().getWindow());
+
+        if (file == null) return;
+
+        try {
+            FileWriter outputFile = new FileWriter(file.getPath());
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("id,firstName,lastName,department,major,email,imageURL");
+            for (Person p : data) {
+                stringBuilder.append("\n").append(p.toCSVData());
+            }
+            outputFile.write(stringBuilder.toString());
+            outputFile.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     private static class Results {
-
         String fname;
         String lname;
         Major major;

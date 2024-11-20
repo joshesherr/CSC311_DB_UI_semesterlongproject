@@ -25,7 +25,7 @@ public class MainApplication extends Application {
     public void start(Stage primaryStage) {
         Image icon = new Image(getClass().getResourceAsStream("/images/DollarClouddatabase.png"));
         this.primaryStage = primaryStage;
-        this.primaryStage.setResizable(false);
+        this.primaryStage.setResizable(true);
         primaryStage.getIcons().add(icon);
         primaryStage.setTitle("FSC CSC311 _ Database Project");
         showScene1();
@@ -34,7 +34,7 @@ public class MainApplication extends Application {
     private void showScene1() {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/view/splashscreen.fxml"));
-            Scene scene = new Scene(root, 900, 600);
+            Scene scene = new Scene(root, 960, 600);
             scene.getStylesheets().add(getClass().getResource("/css/lightTheme.css").toExternalForm());
             primaryStage.setScene(scene);
             primaryStage.show();
@@ -54,7 +54,7 @@ public class MainApplication extends Application {
             fadeOut.setFromValue(1);
             fadeOut.setToValue(0);
             fadeOut.setOnFinished(e -> {
-                Scene newScene = new Scene(newRoot, 900, 600);
+                Scene newScene = new Scene(newRoot, 960, 600);
                 primaryStage.setScene(newScene);
                 primaryStage.show();
             });

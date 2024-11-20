@@ -1,18 +1,21 @@
 package model;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class Person {
     private Integer id;
     private String firstName;
     private String lastName;
     private String department;
-    private String major;
+    private Major major;
     private String email;
     private String imageURL;
 
     public Person() {
     }
 
-    public Person(String firstName, String lastName, String department, String major, String email,  String imageURL) {
+    public Person(String firstName, String lastName, String department, Major major, String email,  String imageURL) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.department = department;
@@ -21,7 +24,7 @@ public class Person {
         this.imageURL = imageURL;
     }
 
-    public Person(Integer id, String firstName, String lastName, String department, String major, String email,  String imageURL) {
+    public Person(Integer id, String firstName, String lastName, String department, Major major, String email,  String imageURL) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -66,11 +69,11 @@ public class Person {
     }
 
 
-    public String getMajor() {
+    public Major getMajor() {
         return major;
     }
 
-    public void setMajor(String major) {
+    public void setMajor(Major major) {
         this.major = major;
     }
 
@@ -103,4 +106,21 @@ public class Person {
                 '}';
     }
 
+    public String toCSVData() {
+        String[] data = new String[] {id.toString(),firstName,lastName,department,major.name(),email,imageURL};
+        return Stream.of(data)
+                .map(this::escapeSpecialCharacters)
+                .collect(Collectors.joining(","));
+    }
+    private String escapeSpecialCharacters(String data) {
+        if (data == null) {
+            throw new IllegalArgumentException("Input data cannot be null");
+        }
+        String escapedData = data.replaceAll("\\R", " ");
+        if (data.contains(",") || data.contains("\"") || data.contains("'")) {
+            data = data.replace("\"", "\"\"");
+            escapedData = "\"" + data + "\"";
+        }
+        return escapedData;
+    }
 }
