@@ -12,6 +12,6 @@ public enum Major {
     }
 
     public boolean equals(String majorName) {
-        return this.name.equals(majorName);
+        return name().equals(majorName) || this.name.equals(majorName);
     }
 }

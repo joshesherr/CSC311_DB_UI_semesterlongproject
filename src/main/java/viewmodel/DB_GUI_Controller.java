@@ -24,17 +24,18 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.Major;
 import model.Person;
+import model.Validator;
 import service.MyLogger;
 
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.Scanner;
+import java.util.*;
 
 public class DB_GUI_Controller implements Initializable {
 
+    @FXML
+    Label errorText;
     StorageUploader store = new StorageUploader();
     public ProgressIndicator progressBar;
     @FXML
@@ -76,12 +77,15 @@ public class DB_GUI_Controller implements Initializable {
             throw new RuntimeException(e);
         }
 
-        tv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 
         ObservableList<String> li = FXCollections.observableArrayList();
         for (Major v :  Major.values()) li.add(v.getMajorName());
         major.setItems(li);
 
+        major.getEditor().setOnKeyTyped(e->{
+            inputFieldUpdated();
+        });
     }
 
     @FXML
@@ -99,12 +103,13 @@ public class DB_GUI_Controller implements Initializable {
         first_name.setText("");
         last_name.setText("");
         department.setText("");
-        major.setValue(null);
+        major.getSelectionModel().clearSelection();
         email.setText("");
         imageURL.setText("");
         addBtn.setDisable(true);
         editBtn.setDisable(true);
         deleteBtn.setDisable(true);
+        tv.getSelectionModel().clearSelection();
     }
 
     @FXML
@@ -280,71 +285,23 @@ public class DB_GUI_Controller implements Initializable {
         });
     }
 
-    private static final int
-    FIRST_NAME=0,
-    LAST_NAME=1,
-    DEPARTMENT=2,
-    MAJOR=3,
-    EMAIL=4,
-    IMAGE_URL=5;
-    /**
-     * @return A number whose bits represent which
-     * elements in the form are invalid.
-     */
-    public int checkInputFields() {
-        int i=0;
-        i += inputValidation(first_name.getText(),FIRST_NAME)
-                ?0:(int)Math.pow(2,FIRST_NAME);
-        i += inputValidation(first_name.getText(),LAST_NAME)
-                ?0:(int)Math.pow(2,LAST_NAME);
-        i += inputValidation(department.getText(),DEPARTMENT)
-                ?0:(int)Math.pow(2,DEPARTMENT);
-        i += (major.getValue()!=null)
-                ?0:(int)Math.pow(2,MAJOR);
-        i += inputValidation(email.getText(),EMAIL)
-                ?0:(int)Math.pow(2,EMAIL);
-        i += inputValidation(imageURL.getText(),IMAGE_URL)
-                ?0:(int)Math.pow(2,IMAGE_URL);
-        return i;
-    }
-
-    /**
-     *
-     * @param s the string being validated.
-     * @param validationType which validation method to use.
-     * @return True or False depending on if the string passed the tests.
-     */
-    public boolean inputValidation(String s, int validationType) {
-        return switch (validationType) {
-            case FIRST_NAME, LAST_NAME -> s.matches("^[^ ±!@£$%^&*_+§¡€#¢§¶•ªº«\\\\/<>?:;|=.,]{1,20}$");
-            case DEPARTMENT -> s.matches("^[^±!@£$%^&*_+§¡€#¢§¶•ªº«\\\\/<>?:;|=.,]{1,}$");
-            case MAJOR -> {for (Major m : Major.values()) {if (m.equals(s)) yield true;}yield false;}
-            case EMAIL -> s.matches("^(?!\\.)[\\w\\-_.]*[^.]@farmingdale.edu$");
-            case IMAGE_URL -> s.matches("([^?#]*\\/)?([^?#]*\\.([Jj][Pp][Ee]?[Gg]|[Pp][Nn][Gg]|[Gg][Ii][Ff]))(?:\\?([^#]*))?(?:#(.*))?$");
-            default -> false;
-        };
-    }
-
     private void formValidation() {
-        int invalidBits=checkInputFields();
-        //region example
-//        if ( (invalidBits & (1<<FIRST_NAME) )!=0 ) System.out.println("First Name is invalid");
-//        if ( (invalidBits & (1<<LAST_NAME) )!=0 ) System.out.println("Last Name is invalid");
-//        if ( (invalidBits & (1<<DEPARTMENT) )!=0 ) System.out.println("Department Name is invalid");
-//        if ( (invalidBits & (1<<MAJOR) )!=0 ) System.out.println("Major Name is invalid");
-//        if ( (invalidBits & (1<<EMAIL) )!=0 ) System.out.println("Email is invalid");
-//        if ( (invalidBits & (1<<IMAGE_URL) )!=0 ) System.out.println("Image is invalid");
-        //endregion
+        int invalidBits = Validator.validate(first_name.getText(), Validator.FIRST_NAME)
+            +  Validator.validate(first_name.getText(), Validator.LAST_NAME)
+            +  Validator.validate(department.getText(), Validator.DEPARTMENT)
+            +  Validator.validate(major.getEditor().getText(), Validator.MAJOR)
+            +  Validator.validate(email.getText(), Validator.EMAIL)
+            +  Validator.validate(imageURL.getText(), Validator.IMAGE_URL);
         addBtn.setDisable(invalidBits!=0);// if any bits are set, disable the add and edit button
         editBtn.setDisable(invalidBits!=0);
     }
 
     @FXML
-    protected void inputFieldUpdated(KeyEvent keyEvent) {
+    protected void inputFieldUpdated() {
         formValidation();
     }
 
-    //TODO and function to import and export csv
+    //TODO Make this import on a different thread to avoid program freezing.
     public void importCSV(ActionEvent actionEvent) {
 
         FileChooser fileChooser = new FileChooser();
@@ -357,24 +314,34 @@ public class DB_GUI_Controller implements Initializable {
 
         try {
             Scanner csvReader = new Scanner(file);
-            csvReader.next();
-            csvReader.useDelimiter("\n");
+            csvReader.nextLine();
             cnUtil.deleteAllRecords();
             data.clear();
 
+            int lineNumber = 0;
             while (csvReader.hasNext()) {
-                Scanner tokens = new Scanner(csvReader.next());
+                String line = csvReader.nextLine();
+                lineNumber++;
+                Scanner tokens = new Scanner(line);
                 tokens.useDelimiter(",");
-
-                String firstName=tokens.next(), lastName=tokens.next(), department=tokens.next(), major=tokens.next(), email=tokens.next(), imageUrl=tokens.next();
-                boolean valid = inputValidation(firstName, FIRST_NAME)
-                        && inputValidation(lastName, LAST_NAME)
-                        && inputValidation(department, DEPARTMENT)
-                        && inputValidation(major, MAJOR)
-                        && inputValidation(email, EMAIL)
-                        && inputValidation(imageUrl, IMAGE_URL);
-
-                if (!valid) throw new Exception("Invalid CSV Data.");
+                String id = tokens.hasNext()?tokens.next():"",
+                        firstName=tokens.hasNext()?tokens.next():"",
+                        lastName=tokens.hasNext()?tokens.next():"",
+                        department=tokens.hasNext()?tokens.next():"",
+                        major=tokens.hasNext()?tokens.next():"",
+                        email=tokens.hasNext()?tokens.next():"",
+                        imageUrl=tokens.hasNext()?tokens.next():"";
+                int invalidBits =  Validator.validate(firstName, Validator.FIRST_NAME)
+                    +  Validator.validate(lastName,  Validator.LAST_NAME)
+                    +  Validator.validate(department,  Validator.DEPARTMENT)
+                    +  Validator.validate(major,  Validator.MAJOR)
+                    +  Validator.validate(email,  Validator.EMAIL)
+                    +  Validator.validate(imageUrl,  Validator.IMAGE_URL);
+                if (invalidBits!=0) {
+                    errorText.setText("CSV Data is not valid. Invalid Info found on line "+lineNumber+". Check field(s): "+ Validator.invalidBitsToString(invalidBits));
+                    MyLogger.makeLog("CSV Data is not valid.\n" + "Invalid Info: "+ Validator.invalidBitsToString(invalidBits));
+                    break;
+                }
 
                 Person p = new Person(firstName,lastName,department,Major.valueOf(major),email,imageUrl);
                 cnUtil.insertUser(p);
@@ -383,8 +350,6 @@ public class DB_GUI_Controller implements Initializable {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
 
     }
