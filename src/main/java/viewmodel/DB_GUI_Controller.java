@@ -31,13 +31,16 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DB_GUI_Controller implements Initializable {
 
+    public ProgressIndicator progressIndicator;
+    public ProgressBar progressBar;
     @FXML
     Label errorText;
     StorageUploader store = new StorageUploader();
-    public ProgressIndicator progressBar;
     @FXML
     Button addBtn, editBtn, deleteBtn;
     @FXML
@@ -56,6 +59,7 @@ public class DB_GUI_Controller implements Initializable {
     private TableColumn<Person, String> tv_fn, tv_ln, tv_department, tv_major, tv_email;
     private final DbConnectivityClass cnUtil = new DbConnectivityClass();
     private final ObservableList<Person> data = cnUtil.getData();
+    private boolean formDisabled=false;
 
     /*
     ToDo 1. Disable the "Edit" and "Delete" button unless a record is selected from the table view.
@@ -86,30 +90,8 @@ public class DB_GUI_Controller implements Initializable {
         major.getEditor().setOnKeyTyped(e->{
             inputFieldUpdated();
         });
-    }
 
-    @FXML
-    protected void addNewRecord() {
-            Person p = new Person(first_name.getText(), last_name.getText(), department.getText(),
-                    Major.values()[major.getSelectionModel().getSelectedIndex()], email.getText(), imageURL.getText());
-            cnUtil.insertUser(p);
-            p.setId(cnUtil.retrieveId(p));
-            data.add(p);
-            clearForm();
-    }
-
-    @FXML
-    protected void clearForm() {
-        first_name.setText("");
-        last_name.setText("");
-        department.setText("");
-        major.getSelectionModel().clearSelection();
-        email.setText("");
-        imageURL.setText("");
-        addBtn.setDisable(true);
-        editBtn.setDisable(true);
-        deleteBtn.setDisable(true);
-        tv.getSelectionModel().clearSelection();
+        progressIndicator.progressProperty().bind(progressBar.progressProperty());
     }
 
     @FXML
@@ -145,24 +127,88 @@ public class DB_GUI_Controller implements Initializable {
     }
 
     @FXML
+    protected void addNewRecord() {
+        Person p = new Person(first_name.getText(), last_name.getText(), department.getText(), Major.values()[major.getSelectionModel().getSelectedIndex()], email.getText(), imageURL.getText());
+        addNewRecord(p);
+    }
+    private void addNewRecord(Person p) {
+        Task<Boolean> insertTask = cnUtil.insertUser(p);
+        errorText.textProperty().bind(insertTask.messageProperty());
+
+        insertTask.setOnRunning(s->{
+            disableForm();
+        });
+        insertTask.setOnSucceeded(s->{
+            p.setId(cnUtil.retrieveId(p));
+            data.add(p);
+            enableForm();
+        });
+        insertTask.setOnCancelled(s->enableForm());
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        executorService.execute(insertTask); // start the task
+        executorService.shutdown();
+    }
+
+    @FXML
+    protected void clearForm() {
+        first_name.setText("");
+        last_name.setText("");
+        department.setText("");
+        major.getSelectionModel().clearSelection();
+        email.setText("");
+        imageURL.setText("");
+        addBtn.setDisable(true);
+        editBtn.setDisable(true);
+        deleteBtn.setDisable(true);
+        tv.getSelectionModel().clearSelection();
+    }
+
+    @FXML
     protected void editRecord() {
         Person p = tv.getSelectionModel().getSelectedItem();
         int index = data.indexOf(p);
         Person p2 = new Person(index + 1, first_name.getText(), last_name.getText(), department.getText(),
                 Major.values()[major.getSelectionModel().getSelectedIndex()], email.getText(),  imageURL.getText());
-        cnUtil.editUser(p.getId(), p2);
-        data.remove(p);
-        data.add(index, p2);
-        tv.getSelectionModel().select(index);
+
+        Task<Boolean> editTask = cnUtil.editUser(p.getId(), p2);
+        errorText.textProperty().bind(editTask.messageProperty());
+
+        editTask.setOnRunning(s->{
+            disableForm();
+        });
+        editTask.setOnSucceeded(s->{
+            data.remove(p);
+            data.add(index, p2);
+            enableForm();
+            tv.getSelectionModel().select(index);
+        });
+        editTask.setOnCancelled(s->enableForm());
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        executorService.execute(editTask); // start the task
+        executorService.shutdown();
     }
 
     @FXML
     protected void deleteRecord() {
         Person p = tv.getSelectionModel().getSelectedItem();
         int index = data.indexOf(p);
-        cnUtil.deleteRecord(p);
-        data.remove(index);
         tv.getSelectionModel().select(index);
+
+        Task<Boolean> deleteTask = cnUtil.deleteRecord(p);
+        errorText.textProperty().bind(deleteTask.messageProperty());
+
+        deleteTask.setOnRunning(s->{
+            disableForm();
+        });
+        deleteTask.setOnSucceeded(s->{
+            data.remove(index);
+            clearForm();
+            enableForm();
+        });
+        deleteTask.setOnCancelled(s->enableForm());
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        executorService.execute(deleteTask); // start the task
+        executorService.shutdown();
     }
 
     @FXML
@@ -204,6 +250,28 @@ public class DB_GUI_Controller implements Initializable {
         };
     }
 
+    public void disableForm() {
+        formDisabled = true;
+        addBtn.setDisable(true);
+        editBtn.setDisable(true);
+        deleteBtn.setDisable(true);
+        first_name.setDisable(true);
+        last_name.setDisable(true);
+        department.setDisable(true);
+        email.setDisable(true);
+        imageURL.setDisable(true);
+        major.setDisable(true);
+    }
+    public void enableForm() {
+        formDisabled=false;
+        formValidation();
+        first_name.setDisable(false);
+        last_name.setDisable(false);
+        department.setDisable(false);
+        email.setDisable(false);
+        imageURL.setDisable(false);
+        major.setDisable(false);
+    }
 
     @FXML
     protected void addRecord() {
@@ -213,11 +281,8 @@ public class DB_GUI_Controller implements Initializable {
     @FXML
     protected void selectedItemTV(MouseEvent mouseEvent) {
         Person p = tv.getSelectionModel().getSelectedItem();
-        if (p==null) {
-            editBtn.setDisable(true);
-            deleteBtn.setDisable(true);
-            return;
-        }
+        if (p==null) return;
+        if (isFormDisabled()) return;
         first_name.setText(p.getFirstName());
         last_name.setText(p.getLastName());
         department.setText(p.getDepartment());
@@ -225,9 +290,6 @@ public class DB_GUI_Controller implements Initializable {
         email.setText(p.getEmail());
         imageURL.setText(p.getImageURL());
         formValidation();
-
-        editBtn.setDisable(false);
-        deleteBtn.setDisable(false);
     }
 
     public void lightTheme(ActionEvent actionEvent) {
@@ -293,7 +355,8 @@ public class DB_GUI_Controller implements Initializable {
             +  Validator.validate(email.getText(), Validator.EMAIL)
             +  Validator.validate(imageURL.getText(), Validator.IMAGE_URL);
         addBtn.setDisable(invalidBits!=0);// if any bits are set, disable the add and edit button
-        editBtn.setDisable(invalidBits!=0);
+        editBtn.setDisable(tv.selectionModelProperty().get().isEmpty());
+        deleteBtn.setDisable(tv.selectionModelProperty().get().isEmpty());
     }
 
     @FXML
@@ -302,7 +365,7 @@ public class DB_GUI_Controller implements Initializable {
     }
 
     //TODO Make this import on a different thread to avoid program freezing.
-    public void importCSV(ActionEvent actionEvent) {
+    public void importCSV() {
 
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Export as CSV");
@@ -315,9 +378,7 @@ public class DB_GUI_Controller implements Initializable {
         try {
             Scanner csvReader = new Scanner(file);
             csvReader.nextLine();
-            cnUtil.deleteAllRecords();
-            data.clear();
-
+            List<Person> persons = new ArrayList<>();
             int lineNumber = 0;
             while (csvReader.hasNext()) {
                 String line = csvReader.nextLine();
@@ -332,30 +393,54 @@ public class DB_GUI_Controller implements Initializable {
                         email=tokens.hasNext()?tokens.next():"",
                         imageUrl=tokens.hasNext()?tokens.next():"";
                 int invalidBits =  Validator.validate(firstName, Validator.FIRST_NAME)
-                    +  Validator.validate(lastName,  Validator.LAST_NAME)
-                    +  Validator.validate(department,  Validator.DEPARTMENT)
-                    +  Validator.validate(major,  Validator.MAJOR)
-                    +  Validator.validate(email,  Validator.EMAIL)
-                    +  Validator.validate(imageUrl,  Validator.IMAGE_URL);
+                        +  Validator.validate(lastName,  Validator.LAST_NAME)
+                        +  Validator.validate(department,  Validator.DEPARTMENT)
+                        +  Validator.validate(major,  Validator.MAJOR)
+                        +  Validator.validate(email,  Validator.EMAIL)
+                        +  Validator.validate(imageUrl,  Validator.IMAGE_URL);
                 if (invalidBits!=0) {
-                    errorText.setText("CSV Data is not valid. Invalid Info found on line "+lineNumber+". Check field(s): "+ Validator.invalidBitsToString(invalidBits));
+                    errorText.setText("CSV Data is not valid. Invalid Info found in row "+lineNumber+". Check field(s): "+ Validator.invalidBitsToString(invalidBits));
                     MyLogger.makeLog("CSV Data is not valid.\n" + "Invalid Info: "+ Validator.invalidBitsToString(invalidBits));
-                    break;
+                    return;
                 }
-
-                Person p = new Person(firstName,lastName,department,Major.valueOf(major),email,imageUrl);
-                cnUtil.insertUser(p);
-                p.setId(cnUtil.retrieveId(p));
-                data.add(p);
+                persons.add(new Person(firstName, lastName, department, Major.valueOf(major), email, imageUrl));
             }
+
+
+            Task<Void> deleteAllTask = cnUtil.deleteAllRecords();
+            deleteAllTask.setOnRunning(c->disableForm());
+            deleteAllTask.setOnCancelled(s->enableForm());
+
+            deleteAllTask.setOnSucceeded(s->{
+                data.clear();
+
+                Task<Boolean> insertAllTask = cnUtil.insertAllUser(persons);
+                progressBar.progressProperty().bind(insertAllTask.progressProperty());
+                errorText.textProperty().bind(insertAllTask.messageProperty());
+
+                insertAllTask.setOnSucceeded(k-> {
+                    enableForm();
+                    cnUtil.getData();
+                });
+                insertAllTask.setOnCancelled(k->enableForm());
+
+                ExecutorService executorService2 = Executors.newFixedThreadPool(1);
+                executorService2.execute(insertAllTask);
+                executorService2.shutdown();
+
+            });
+            ExecutorService executorService1 = Executors.newFixedThreadPool(1);
+            executorService1.execute(deleteAllTask);
+            executorService1.shutdown();
+            errorText.textProperty().bind(deleteAllTask.messageProperty());
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    public void exportCSV(ActionEvent actionEvent) {
-
+    public void exportCSV() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Export as CSV");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Comma Separated List", "*.csv"));
@@ -365,20 +450,40 @@ public class DB_GUI_Controller implements Initializable {
 
         if (file == null) return;
 
-        try {
-            FileWriter outputFile = new FileWriter(file.getPath());
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("id,firstName,lastName,department,major,email,imageURL");
-            for (Person p : data) {
-                stringBuilder.append("\n").append(p.toCSVData());
+        Task<Void> exportCSVTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                try {
+                    updateMessage("Exporting...");
+                    FileWriter outputFile = new FileWriter(file.getPath());
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append("id,firstName,lastName,department,major,email,imageURL");
+                    for (int i = 0; i < data.size(); i++) {
+                        updateProgress(i+1, data.size());
+                        stringBuilder.append("\n").append(data.get(i).toCSVData());
+                    }
+                    outputFile.write(stringBuilder.toString());
+                    outputFile.close();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+                updateProgress(1,1);
+                updateMessage("Export Complete!");
+                return null;
             }
-            outputFile.write(stringBuilder.toString());
-            outputFile.close();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        };
 
+        progressBar.progressProperty().bind(exportCSVTask.progressProperty());
+        errorText.textProperty().bind(exportCSVTask.messageProperty());
+
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        executorService.execute(exportCSVTask);
+        executorService.shutdown();
+    }
+
+    public boolean isFormDisabled() {
+        return formDisabled;
     }
 
     private static class Results {

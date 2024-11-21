@@ -8,6 +8,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -75,21 +76,34 @@
                                         <Image url="@../images/profile.png" />
                                     </image>
                                 </ImageView>
-                        <ProgressIndicator fx:id="progressBar" layoutX="53.0" layoutY="122.0" progress="0.56" />
                             </children>
                         </AnchorPane>
                     </children>
                 </VBox>
             </left>
             <bottom>
-                <HBox prefHeight="14.0" prefWidth="960.0" styleClass="admin_section" BorderPane.alignment="CENTER">
+            <VBox styleClass="admin_section" BorderPane.alignment="CENTER">
                <children>
-                  <Label id="error-message" fx:id="errorText" text="Error Message">
-                     <HBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                     </HBox.margin>
-                  </Label>
-               </children></HBox>
+                  <AnchorPane VBox.vgrow="ALWAYS">
+                     <children>
+                        <ProgressBar fx:id="progressBar" prefHeight="11.0" prefWidth="960.0" progress="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                            <HBox prefHeight="27.0" prefWidth="888.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                           <children>
+                              <ProgressIndicator fx:id="progressIndicator" prefHeight="0.0" prefWidth="27.0" progress="0.0" visible="false" />
+                              <Label id="error-message" fx:id="errorText">
+                                 <HBox.margin>
+                                    <Insets left="10.0" />
+                                 </HBox.margin>
+                              </Label>
+                           </children>
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                        </HBox>
+                     </children>
+                  </AnchorPane>
+               </children>
+            </VBox>
             </bottom>
          <right>
                 <VBox styleClass="text_field_pane" BorderPane.alignment="CENTER_RIGHT">
