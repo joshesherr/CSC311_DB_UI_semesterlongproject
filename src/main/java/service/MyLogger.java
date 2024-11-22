@@ -8,10 +8,8 @@ public class MyLogger {
     private final static Logger LOGGER =
             Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
-
     public static void makeLog(String msg)
     {
-        LOGGER.log(Level.INFO, "CSC311_Log__ "+msg);
-
+        LOGGER.log(Level.INFO, "CSC311_Log: "+msg);
     }
 }

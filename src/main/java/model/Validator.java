@@ -3,6 +3,10 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class uses bit-masking to identify which fields are incorrect.
+ * It is mostly just used for sending error information to the user.
+ */
 public class Validator {
 
     public static final int

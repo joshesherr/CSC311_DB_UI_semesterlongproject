@@ -106,16 +106,17 @@ public class Person {
                 '}';
     }
 
+    //convert person's fields into a csv friendly format.
     public String toCSVData() {
         String[] data = new String[] {id.toString(),firstName,lastName,department,major.name(),email,imageURL};
         return Stream.of(data)
                 .map(this::escapeSpecialCharacters)
                 .collect(Collectors.joining(","));
     }
+    //check for special characters in data.
     private String escapeSpecialCharacters(String data) {
-        if (data == null) {
-            throw new IllegalArgumentException("Input data cannot be null");
-        }
+        if (data == null)  throw new IllegalArgumentException("Input data cannot be null");
+
         String escapedData = data.replaceAll("\\R", " ");
         if (data.contains(",") || data.contains("\"") || data.contains("'")) {
             data = data.replace("\"", "\"\"");

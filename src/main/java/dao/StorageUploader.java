@@ -24,18 +24,6 @@ public class StorageUploader {
                 .buildClient();
     }
 
-    public void uploadFile(String filePath, String blobName) {
-        BlobClient blobClient = containerClient.getBlobClient(blobName);
-        blobClient.uploadFromFile(filePath);
-        //blobClient.uploadFromFileWithResponse(filePath);
-    }
-
-    public void loadFile(String filePath, String blobName) {
-        BlobClient blobClient = containerClient.getBlobClient(blobName);
-        blobClient.downloadContent();
-        //blobClient.uploadFromFileWithResponse(filePath);
-    }
-
     public BlobContainerClient getContainerClient(){
         return containerClient;
     }

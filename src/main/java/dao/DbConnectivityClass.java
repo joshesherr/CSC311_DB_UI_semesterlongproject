@@ -21,8 +21,6 @@ public class     DbConnectivityClass {
     private final ObservableList<Person> data = FXCollections.observableArrayList();
 
     // Method to retrieve all data from the database and store it into an observable list to use in the GUI tableview.
-
-
     public ObservableList<Person> getData() {
         connectToDatabase();
         try {
@@ -152,6 +150,7 @@ public class     DbConnectivityClass {
         }
     }
 
+    //Method to insert one record into the database
     public Task<Boolean> insertUser(Person person) {
         return new Task<Boolean>() {
             @Override
@@ -189,6 +188,8 @@ public class     DbConnectivityClass {
             }
         };
     }
+
+    //Method to insert many records in the database at once.
     public Task<Boolean> insertAllUser(List<Person> persons) {
         return new Task<Boolean>() {
             @Override
@@ -227,6 +228,7 @@ public class     DbConnectivityClass {
         };
     }
 
+    //Method to edit one record in the database
     public Task<Boolean> editUser(int id, Person p) {
         return new Task<Boolean>() {
             @Override
@@ -258,6 +260,7 @@ public class     DbConnectivityClass {
         };
     }
 
+    //Method to delete one record in the database
     public Task<Boolean> deleteRecord(Person person) {
         int id = person.getId();
         return new Task<Boolean>() {
@@ -284,6 +287,7 @@ public class     DbConnectivityClass {
         };
     }
 
+    //method to delete all records in the database
     public Task<Void> deleteAllRecords() {
         return new Task<Void>() {
             @Override

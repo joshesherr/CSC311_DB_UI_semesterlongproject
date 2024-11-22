@@ -1,12 +1,10 @@
 package service;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.prefs.Preferences;
 
 public class UserSession {
 
-    private static UserSession instance;
+    private static volatile UserSession instance;
 
     private String userName;
 
@@ -23,21 +21,20 @@ public class UserSession {
         userPreferences.put("PRIVILEGES",privileges);
     }
 
-
-
     public static UserSession getInstance(String userName,String password, String privileges) {
         if(instance == null) {
-            instance = new UserSession(userName, password, privileges);
+            synchronized (UserSession.class) {
+                if (instance == null) { // synchronization check
+                    instance = new UserSession(userName, password, privileges);
+                }
+            }
         }
         return instance;
+    }
+    public static UserSession getInstance(String userName,String password) {
+        return getInstance(userName, password, "NONE");
     }
 
-    public static UserSession getInstance(String userName,String password) {
-        if(instance == null) {
-            instance = new UserSession(userName, password, "NONE");
-        }
-        return instance;
-    }
     public String getUserName() {
         return this.userName;
     }
