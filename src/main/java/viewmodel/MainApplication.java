@@ -10,6 +10,8 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.util.prefs.Preferences;
+
 public class MainApplication extends Application {
 
     private static Scene scene;
@@ -35,7 +37,7 @@ public class MainApplication extends Application {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/view/splashscreen.fxml"));
             Scene scene = new Scene(root, 960, 600);
-            scene.getStylesheets().add(getClass().getResource("/css/lightTheme.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource(Preferences.userRoot().get("THEME","/css/lightTheme.css")).toExternalForm());
             primaryStage.setScene(scene);
             primaryStage.show();
             changeScene();
@@ -49,12 +51,12 @@ public class MainApplication extends Application {
             Parent newRoot = FXMLLoader.load(getClass().getResource("/view/login.fxml").toURI().toURL());
             Scene currentScene = primaryStage.getScene();
             Parent currentRoot = currentScene.getRoot();
-            currentScene.getStylesheets().add(getClass().getResource("/css/lightTheme.css").toExternalForm());
-            FadeTransition fadeOut = new FadeTransition(Duration.seconds(3), currentRoot);
+            FadeTransition fadeOut = new FadeTransition(Duration.seconds(2), currentRoot);
             fadeOut.setFromValue(1);
             fadeOut.setToValue(0);
             fadeOut.setOnFinished(e -> {
                 Scene newScene = new Scene(newRoot, 960, 600);
+                newScene.getStylesheets().add(getClass().getResource(Preferences.userRoot().get("THEME","/css/lightTheme.css")).toExternalForm());
                 primaryStage.setScene(newScene);
                 primaryStage.show();
             });

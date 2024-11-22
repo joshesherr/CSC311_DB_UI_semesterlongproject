@@ -33,6 +33,7 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.prefs.Preferences;
 
 public class DB_GUI_Controller implements Initializable {
 
@@ -108,7 +109,7 @@ public class DB_GUI_Controller implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/view/login.fxml"));
             Scene scene = new Scene(root, 900, 600);
-            scene.getStylesheets().add(getClass().getResource("/css/lightTheme.css").getFile());
+            scene.getStylesheets().add(getClass().getResource(Preferences.userRoot().get("THEME","/css/lightTheme.css")).toExternalForm());
             Stage window = (Stage) menuBar.getScene().getWindow();
             window.setScene(scene);
             window.show();
@@ -130,7 +131,7 @@ public class DB_GUI_Controller implements Initializable {
             HTMLViewerController con = fxmlLoader.getController();
             con.showPage(type);
             Stage stage = new Stage();
-            Scene scene = new Scene(root, 600, 500);
+            Scene scene = new Scene(root, 420, 230);
             stage.setScene(scene);
             stage.showAndWait();
         } catch (Exception e) {
@@ -351,6 +352,8 @@ public class DB_GUI_Controller implements Initializable {
 
     public void lightTheme(ActionEvent actionEvent) {
         try {
+            Preferences.userRoot().put("THEME","/css/lightTheme.css");
+
             Scene scene = menuBar.getScene();
             Stage stage = (Stage) scene.getWindow();
             stage.getScene().getStylesheets().clear();
@@ -366,6 +369,8 @@ public class DB_GUI_Controller implements Initializable {
 
     public void darkTheme(ActionEvent actionEvent) {
         try {
+            Preferences.userRoot().put("THEME","/css/darkTheme.css");;
+
             Stage stage = (Stage) menuBar.getScene().getWindow();
             Scene scene = stage.getScene();
             scene.getStylesheets().clear();

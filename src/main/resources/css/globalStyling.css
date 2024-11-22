@@ -7,6 +7,15 @@
     -fx-text-background-color: -fx-text-color;
 }
 
+.text {
+    -fx-text-fill: -fx-text-color;
+    -fx-fill: -fx-text-color;
+}
+.button .text {
+    -fx-text-fill: #ffffff;
+    -fx-fill: #ffffff;
+}
+
 /* MenuBar and Menus */
 .menu_bar {
     -fx-border-width: 0 0 1px 0;
@@ -30,14 +39,23 @@
 
 .table_columns, .table_columns .label {
     -fx-alignment: CENTER_LEFT;
+    -fx-background-color: -fx-bg-color-1;
+    -fx-border-color: -fx-border-color-1;
     -fx-border-width: 0 0 1px 0;
 }
 
-.table-row-cell:selected {
+.tool-bar {
+    -fx-background-color: -fx-bg-color-1;
+    -fx-border-color: -fx-border-color-1;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.table-row-cell:selected, .table-row-cell:selected .text {
     -fx-font-weight: bold;
     -fx-background-color: -fx-bg-color-3;
     -fx-text-background-color: #14d15f;
     -fx-text-fill: #13b842;
+    -fx-fill: #17cd49;
 }
 
 .table-view .cell {
@@ -78,10 +96,28 @@
 }
 
 #imageBtn {
+    -fx-font-size: 26px;
     -fx-padding: -8px;
 }
 
 /* Buttons */
+
+.button {
+    -fx-font-weight: bold;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+    -fx-background-color: -fx-btn-color;
+}
+.button:disabled {
+    -fx-cursor: default;
+    -fx-background-color: -fx-disabled-btn-color;
+    -fx-text-fill: -fx-disabled-text-color;
+}
+.button:hover {
+    -fx-background-color: -fx-hover-btn-color;
+}
+
 .db_btn {
     -fx-pref-width:200px;
     -fx-font-weight: bold;
@@ -148,6 +184,8 @@
     -fx-background-insets: 1, 0, 0;
     -fx-background-radius: 2em;
 }
+
+
 
 .scroll-pane:focused {
     -fx-focus-color: transparent;

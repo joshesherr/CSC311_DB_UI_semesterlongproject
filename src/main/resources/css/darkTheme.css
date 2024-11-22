@@ -20,15 +20,9 @@
 
 /* TableView */
 .table_view {
-    -fx-background-color: #2f2f2f;
+    -fx-background-color: -fx-bg-color-1;
     -fx-border-color: -fx-border-color-1;
     -fx-table-cell-border-color: #3a3a3a;
     -fx-selection-bar: #555555; /* Highlight selected row */
     -fx-selection-bar-non-focused: #4a4a4a;
-}
-
-.table_columns {
-    -fx-background-color: #3a3a3a;
-    -fx-border-color: -fx-border-color-1;
-    -fx-border-width: 0 0 1px 0;
 }

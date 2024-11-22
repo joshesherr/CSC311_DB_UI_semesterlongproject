@@ -193,7 +193,7 @@
                         </TextField>
                   <HBox alignment="CENTER" prefHeight="0.0" prefWidth="200.0">
                      <children>
-                      <Button id="imageBtn" fx:id="imageBtn" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#showImage" prefHeight="18.0" prefWidth="55.0" styleClass="text-field" text="📷" HBox.hgrow="ALWAYS">
+                      <Button id="imageBtn" fx:id="imageBtn" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#showImage" prefHeight="18.0" prefWidth="55.0" styleClass="db_btn" text="📷" HBox.hgrow="ALWAYS">
                            <font>
                               <Font name="System Bold" size="26.0" />
                            </font>

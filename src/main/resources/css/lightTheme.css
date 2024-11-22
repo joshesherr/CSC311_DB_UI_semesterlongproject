@@ -1,3 +1,4 @@
+/* Theme Color Overrides */
 * {
     -fx-bg-color-1: #f9f9f9;
     -fx-bg-color-2: #ffffff;
@@ -7,8 +8,8 @@
     -fx-hover-text-color: #e6f7ff;
     -fx-disabled-text-color: #999999;
 
-    -fx-btn-color: #0c982c;
-    -fx-hover-btn-color: #08710e;
+    -fx-btn-color: #22ba48;
+    -fx-hover-btn-color: #2da837;
     -fx-disabled-btn-color: #cccccc;
 
     -fx-border-color-1: #dddddd;
@@ -24,16 +25,4 @@
     -fx-table-cell-border-color: #eeeeee;
     -fx-selection-bar: #d1e7fd; /* Highlight selected row */
     -fx-selection-bar-non-focused: #eaf3fd;
-}
-
-.table_columns {
-    -fx-background-color: #f5f5f5;
-    -fx-border-color: -fx-border-color-1;
-    -fx-border-width: 0 0 1px 0;
-}
-
-.tool-bar {
-    -fx-background-color: #f5f5f5;
-    -fx-border-color: -fx-border-color-1;
-    -fx-border-width: 0 0 1px 0;
 }
