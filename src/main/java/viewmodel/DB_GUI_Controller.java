@@ -167,6 +167,8 @@ public class DB_GUI_Controller implements Initializable {
         major.getSelectionModel().clearSelection();
         email.setText("");
         imageName.setText("");
+        selectedImageFile=null;
+        loadImage(null);
         addBtn.setDisable(true);
         editBtn.setDisable(true);
         deleteBtn.setDisable(true);
@@ -276,7 +278,10 @@ public class DB_GUI_Controller implements Initializable {
     }
 
     private void loadImage(String fileName) {
-        if (fileName==null) return;
+        if (fileName==null) {
+            imageView.setImage(new Image(getClass().getResource("/images/profile.png").toString()));
+            return;
+        }
         Task<Image> loadTask = loadImageTask(fileName);
         new Thread(loadTask).start();
         loadTask.valueProperty().addListener((observable, oldValue, newValue) -> imageView.setImage(newValue));

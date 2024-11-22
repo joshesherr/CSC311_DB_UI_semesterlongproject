@@ -80,8 +80,8 @@
                         </Menu>
                   <Menu mnemonicParsing="false" text="CSV">
                     <items>
-                      <MenuItem mnemonicParsing="false" onAction="#importCSV" text="Import CSV" />
-                        <MenuItem mnemonicParsing="false" onAction="#exportCSV" text="Export CSV" />
+                      <MenuItem mnemonicParsing="false" onAction="#importCSV" text="Import from csv" />
+                        <MenuItem mnemonicParsing="false" onAction="#exportCSV" text="Export to csv" />
                     </items>
                   </Menu>
                     </menus>
