@@ -23,11 +23,11 @@ public class MainApplication extends Application {
     }
 
     public void start(Stage primaryStage) {
-        Image icon = new Image(getClass().getResourceAsStream("/images/DollarClouddatabase.png"));
+        Image icon = new Image(getClass().getResourceAsStream("/images/fsc.png"));
         this.primaryStage = primaryStage;
         this.primaryStage.setResizable(true);
         primaryStage.getIcons().add(icon);
-        primaryStage.setTitle("FSC CSC311 _ Database Project");
+        primaryStage.setTitle("FSC CSC311 - Database Project");
         showScene1();
     }
 

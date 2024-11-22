@@ -36,8 +36,8 @@
 .table-row-cell:selected {
     -fx-font-weight: bold;
     -fx-background-color: -fx-bg-color-3;
-    -fx-text-background-color: #33b1ff;
-    -fx-text-fill: #33b1ff;
+    -fx-text-background-color: #14d15f;
+    -fx-text-fill: #13b842;
 }
 
 .table-view .cell {
@@ -69,7 +69,7 @@
 }
 
 .text-field:focused, .combo-box:focused {
-    -fx-border-color: #4285f4;
+    -fx-border-color: #19b54d;
 }
 .combo-box .list-cell {
     -fx-background-color: -fx-bg-color-2;
@@ -184,11 +184,11 @@
 }
 
 .progress-bar .bar {
-    -fx-background-color: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(152, 152, 152, 0.5)); /* Gradient for the progress */
+    -fx-background-color: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(66, 244, 90, 0.55)); /* Gradient for the progress */
 }
 
 .progress-bar:indeterminate .bar {
-    -fx-background-color: linear-gradient(to right, rgba(200, 200, 200, 0.33) 0%, rgba(191, 191, 191, 0.49) 50%, rgba(186, 186, 186, 0.77) 100%);
+    -fx-background-color: linear-gradient(to right, rgba(200, 200, 200, 0.33) 0%, rgba(142, 142, 142, 0.46) 50%, rgba(113, 113, 113, 0.68) 100%);
 }
 
 

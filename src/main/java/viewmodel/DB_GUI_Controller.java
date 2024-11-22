@@ -19,6 +19,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
@@ -67,6 +68,7 @@ public class DB_GUI_Controller implements Initializable {
     private final ObservableList<Person> data = cnUtil.getData();
     private boolean formDisabled=false;
     private File selectedImageFile=null;
+    private Person copiedPerson=null;
 
     /*
     ToDo 1. Disable the "Edit" and "Delete" button unless a record is selected from the table view.
@@ -150,6 +152,8 @@ public class DB_GUI_Controller implements Initializable {
             p.setId(cnUtil.retrieveId(p));
             data.add(p);
             enableForm();
+            tv.getSelectionModel().selectLast();
+            selectedItemTV();
         });
         insertTask.setOnCancelled(s->enableForm());
         new Thread(insertTask).start();
@@ -318,11 +322,6 @@ public class DB_GUI_Controller implements Initializable {
     }
 
     @FXML
-    protected void addRecord() {
-        showSomeone();
-    }
-
-    @FXML
     protected void selectedItemTV() {
         Person p = tv.getSelectionModel().getSelectedItem();
         if (p==null) return;
@@ -362,35 +361,6 @@ public class DB_GUI_Controller implements Initializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public void showSomeone() {
-        Dialog<Results> dialog = new Dialog<>();
-        dialog.setTitle("New User");
-        dialog.setHeaderText("Please specify…");
-        DialogPane dialogPane = dialog.getDialogPane();
-        dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        TextField textField1 = new TextField(first_name.getText());
-        TextField textField2 = new TextField(last_name.getText());
-        TextField textField3 = new TextField(email.getText());
-        ObservableList<Major> options =
-                FXCollections.observableArrayList(Major.values());
-        ComboBox<Major> comboBox = new ComboBox<>(options);
-        comboBox.getSelectionModel().selectFirst();
-        dialogPane.setContent(new VBox(8, textField1, textField2,textField3, comboBox));
-        Platform.runLater(textField1::requestFocus);
-        dialog.setResultConverter((ButtonType button) -> {
-            if (button == ButtonType.OK) {
-                return new Results(textField1.getText(),
-                        textField2.getText(), comboBox.getValue());
-            }
-            return null;
-        });
-        Optional<Results> optionalResult = dialog.showAndWait();
-        optionalResult.ifPresent((Results results) -> {
-            MyLogger.makeLog(
-                    results.fname + " " + results.lname + " " + results.major);
-        });
     }
 
     private void formValidation() {
@@ -488,7 +458,7 @@ public class DB_GUI_Controller implements Initializable {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Export as CSV");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Comma Separated List", "*.csv"));
-        fileChooser.setInitialFileName("User-Table.csv");
+        fileChooser.setInitialFileName("Student-Table.csv");
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         File file = fileChooser.showSaveDialog(tv.getScene().getWindow());
 
@@ -526,6 +496,29 @@ public class DB_GUI_Controller implements Initializable {
     public boolean isFormDisabled() {
         return formDisabled;
     }
+    public void hkDelete() {
+        deleteRecord();
+    }
+    public void hkClear() {
+        clearForm();
+    }
+    public void hkCut(ActionEvent actionEvent) {
+        copiedPerson=tv.getSelectionModel().getSelectedItem();
+        deleteRecord();
+    }
+    public void hkCopy() {
+        errorText.textProperty().unbind();
+        errorText.setText("Copied Student!");
+        copiedPerson=tv.getSelectionModel().getSelectedItem();
+    }
+    public void hkPaste() {
+        addNewRecord(copiedPerson);
+    }
+
+    public void tvHotKeys(KeyEvent keyEvent) {
+        selectedItemTV();
+    }
+
 
     private static class Results {
         String fname;

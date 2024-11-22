@@ -17,6 +17,7 @@
 <?import javafx.scene.effect.Blend?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.scene.input.KeyCodeCombination?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -35,18 +36,34 @@
                     <menus>
                         <Menu mnemonicParsing="false" styleClass="menu_options" text="File">
                             <items>
-                                <MenuItem fx:id="newItem" mnemonicParsing="false" onAction="#addRecord" styleClass="menu_items" text="New" />
-                                <MenuItem fx:id="ChangePic" mnemonicParsing="false" onAction="#showImage" styleClass="menu_items" text="Change Pic" />
                                 <MenuItem fx:id="logOut" mnemonicParsing="false" onAction="#logOut" styleClass="menu_items" text="Log out" />
                                 <MenuItem mnemonicParsing="false" onAction="#closeApplication" styleClass="menu_items" text="Exit Program" />
                             </items>
                         </Menu>
                   <Menu mnemonicParsing="false" styleClass="menu_options" text="Edit">
                      <items>
-                        <MenuItem fx:id="editItem" mnemonicParsing="true" styleClass="menu_items" text="_Edit       Ctrl+E" />
-                        <MenuItem fx:id="deleteItem" mnemonicParsing="true" styleClass="menu_items" text="_Delete        Ctrl+D" />
-                        <MenuItem fx:id="ClearItem" mnemonicParsing="false" styleClass="menu_items" text="Clea_r        Ctrl+R" />
-                        <MenuItem fx:id="CopyItem" mnemonicParsing="false" styleClass="menu_items" text="_Copy       Ctrl+C" />
+                        <MenuItem mnemonicParsing="false" onAction="#hkClear" styleClass="menu_items" text="Clear">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                           </accelerator></MenuItem>
+                        <MenuItem mnemonicParsing="true" onAction="#hkDelete" styleClass="menu_items" text="Delete">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="D" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                           </accelerator></MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#hkCut" styleClass="menu_items" text="Cut">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="X" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                           </accelerator>
+                        </MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#hkCopy" styleClass="menu_items" text="Copy">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="C" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                           </accelerator></MenuItem>
+                        <MenuItem mnemonicParsing="false" onAction="#hkPaste" styleClass="menu_items" text="Paste">
+                           <accelerator>
+                              <KeyCodeCombination alt="UP" code="V" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                           </accelerator>
+                        </MenuItem>
                      </items>
                   </Menu>
                         <Menu mnemonicParsing="false" styleClass="menu_options" text="Theme">
@@ -225,7 +242,7 @@
                 </VBox>
          </right>
          <center>
-                <TableView fx:id="tv" nodeOrientation="LEFT_TO_RIGHT" onKeyPressed="#selectedItemTV" onMouseClicked="#selectedItemTV" styleClass="table_view" BorderPane.alignment="CENTER">
+                <TableView fx:id="tv" nodeOrientation="LEFT_TO_RIGHT" onKeyPressed="#tvHotKeys" onMouseClicked="#selectedItemTV" styleClass="table_view" BorderPane.alignment="CENTER">
                     <columns>
                         <TableColumn fx:id="tv_id" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="38.0" styleClass="table_columns" text="ID" />
                         <TableColumn fx:id="tv_fn" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="100.0" styleClass="table_columns" text="First Name" />

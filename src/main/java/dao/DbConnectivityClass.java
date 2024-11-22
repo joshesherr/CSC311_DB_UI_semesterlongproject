@@ -158,7 +158,7 @@ public class     DbConnectivityClass {
             protected Boolean call() throws Exception {
                 boolean result = false;
                 try {
-                    updateMessage("Inserting User...");
+                    updateMessage("Inserting Student...");
                     connectToDatabase();
                     Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
                     String sql = "INSERT INTO users (first_name, last_name, department, major, email, imageURL) VALUES (?, ?, ?, ?, ?, ?)";
@@ -171,7 +171,7 @@ public class     DbConnectivityClass {
                     preparedStatement.setString(6, person.getImageURL());
                     int row = preparedStatement.executeUpdate();
                     if (row > 0) {
-                        lg.makeLog("A new user was inserted successfully.");
+                        lg.makeLog("A new student was inserted successfully.");
                         result=true;
                         updateMessage("Insert Successful!");
                     }
@@ -199,7 +199,7 @@ public class     DbConnectivityClass {
                 for (int i = 0; i < persons.size(); i++)  {
                     updateProgress(i+1, persons.size());
                     try {
-                        updateMessage("Inserting User... "+(i+1)+"\\"+persons.size());
+                        updateMessage("Inserting Students... "+(i+1)+"\\"+persons.size());
                         String sql = "INSERT INTO users (first_name, last_name, department, major, email, imageURL) VALUES (?, ?, ?, ?, ?, ?)";
                         PreparedStatement preparedStatement = conn.prepareStatement(sql);
                         preparedStatement.setString(1, persons.get(i).getFirstName());
@@ -210,7 +210,7 @@ public class     DbConnectivityClass {
                         preparedStatement.setString(6, persons.get(i).getImageURL());
                         int row = preparedStatement.executeUpdate();
                         if (row > 0) {
-                            lg.makeLog("A new user was inserted successfully.");
+                            lg.makeLog("A new student was inserted successfully.");
                             result=true;
                         }
                         preparedStatement.close();
@@ -232,7 +232,7 @@ public class     DbConnectivityClass {
             @Override
             protected Boolean call() throws Exception {
                 try {
-                    updateMessage("Editing User...");
+                    updateMessage("Editing Student...");
                     connectToDatabase();
                     Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
                     String sql = "UPDATE users SET first_name=?, last_name=?, department=?, major=?, email=?, imageURL=? WHERE id=?";
@@ -264,7 +264,7 @@ public class     DbConnectivityClass {
             @Override
             protected Boolean call() throws RuntimeException {
                 try {
-                    updateMessage("Deleting User...");
+                    updateMessage("Deleting Student...");
                     connectToDatabase();
                     Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
                     String sql = "DELETE FROM users WHERE id=?";
@@ -289,7 +289,7 @@ public class     DbConnectivityClass {
             @Override
             protected Void call() throws RuntimeException {
                 try {
-                    updateMessage("Deleting All Users...");
+                    updateMessage("Deleting All Students...");
                     connectToDatabase();
                     Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
                     String sql =
