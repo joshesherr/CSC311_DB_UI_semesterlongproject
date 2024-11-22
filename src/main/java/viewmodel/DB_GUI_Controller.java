@@ -145,6 +145,7 @@ public class DB_GUI_Controller implements Initializable {
         addNewRecord(p);
     }
     private void addNewRecord(Person p) {
+        if (p==null) return;
         uploadImage(selectedImageFile);
         Task<Boolean> insertTask = cnUtil.insertUser(p);
         errorText.textProperty().bind(insertTask.messageProperty());
