@@ -42,24 +42,24 @@
                         </Menu>
                   <Menu mnemonicParsing="false" styleClass="menu_options" text="Edit">
                      <items>
-                        <MenuItem mnemonicParsing="false" onAction="#hkClear" styleClass="menu_items" text="Clear">
+                        <MenuItem mnemonicParsing="false" onAction="#hkClear" styleClass="menu_items" text="Clear       ">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="R" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator></MenuItem>
-                        <MenuItem mnemonicParsing="true" onAction="#hkDelete" styleClass="menu_items" text="Delete">
+                        <MenuItem mnemonicParsing="true" onAction="#hkDelete" styleClass="menu_items" text="Delete      ">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="D" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator></MenuItem>
-                        <MenuItem mnemonicParsing="false" onAction="#hkCut" styleClass="menu_items" text="Cut">
+                        <MenuItem mnemonicParsing="false" onAction="#hkCut" styleClass="menu_items" text="Cut       ">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="X" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
                         </MenuItem>
-                        <MenuItem mnemonicParsing="false" onAction="#hkCopy" styleClass="menu_items" text="Copy">
+                        <MenuItem mnemonicParsing="false" onAction="#hkCopy" styleClass="menu_items" text="Copy     ">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="C" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator></MenuItem>
-                        <MenuItem mnemonicParsing="false" onAction="#hkPaste" styleClass="menu_items" text="Paste">
+                        <MenuItem mnemonicParsing="false" onAction="#hkPaste" styleClass="menu_items" text="Paste       ">
                            <accelerator>
                               <KeyCodeCombination alt="UP" code="V" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
@@ -74,8 +74,8 @@
                         </Menu>
                         <Menu mnemonicParsing="false" styleClass="menu_options" text="Help">
                             <items>
-                                <MenuItem mnemonicParsing="false" onAction="#displayAbout" styleClass="menu_items" text="Help" />
-                        <MenuItem mnemonicParsing="false" onAction="#displayAbout" styleClass="menu_items" text="About" />
+                                <MenuItem fx:id="displayHelp" mnemonicParsing="false" styleClass="menu_items" text="Help" />
+                        <MenuItem fx:id="displayAbout" mnemonicParsing="false" styleClass="menu_items" text="About" />
                             </items>
                         </Menu>
                   <Menu mnemonicParsing="false" text="CSV">

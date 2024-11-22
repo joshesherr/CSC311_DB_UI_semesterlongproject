@@ -1,11 +1,9 @@
 package viewmodel;
 
 import com.azure.storage.blob.BlobClient;
-import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.models.BlobItem;
 import dao.DbConnectivityClass;
 import dao.StorageUploader;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -20,8 +18,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -30,8 +26,7 @@ import model.Person;
 import model.Validator;
 import service.MyLogger;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
+
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
@@ -45,6 +40,8 @@ public class DB_GUI_Controller implements Initializable {
     public ProgressBar progressBar;
     public Label imageName;
     public Button imageBtn;
+    public MenuItem displayHelp;
+    public MenuItem displayAbout;
     @FXML
     Label errorText;
     StorageUploader store = new StorageUploader();
@@ -90,6 +87,9 @@ public class DB_GUI_Controller implements Initializable {
             throw new RuntimeException(e);
         }
 
+        displayAbout.setOnAction(e->displayHTMLSubpage(0));
+        displayHelp.setOnAction(e->displayHTMLSubpage(1));
+
         tv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
         imageView.setClip(new Circle(45,45,45));
 
@@ -123,9 +123,12 @@ public class DB_GUI_Controller implements Initializable {
     }
 
     @FXML
-    protected void displayAbout() {
+    protected void displayHTMLSubpage(int type) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("/view/about.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/view/htmlViewer.fxml"));
+            Parent root = fxmlLoader.load();
+            HTMLViewerController con = fxmlLoader.getController();
+            con.showPage(type);
             Stage stage = new Stage();
             Scene scene = new Scene(root, 600, 500);
             stage.setScene(scene);
@@ -223,7 +226,11 @@ public class DB_GUI_Controller implements Initializable {
 
     @FXML
     protected void showImage() {
-        selectedImageFile = (new FileChooser()).showOpenDialog(imageView.getScene().getWindow());
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+        fileChooser.setTitle("Open Image File");
+        selectedImageFile = (fileChooser.showOpenDialog(imageView.getScene().getWindow()));
+
         if (selectedImageFile == null) {
             imageName.setText("");
         }
@@ -461,7 +468,7 @@ public class DB_GUI_Controller implements Initializable {
 
     public void exportCSV() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Export as CSV");
+        fileChooser.setTitle("Export to csv");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Comma Separated List", "*.csv"));
         fileChooser.setInitialFileName("Student-Table.csv");
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));

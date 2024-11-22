@@ -4,6 +4,7 @@ module com.example.csc311_db_ui_semesterlongproject {
     requires java.sql;
     requires com.azure.storage.blob;
     requires jdk.dynalink;
+    requires javafx.web;
     requires java.desktop;
     requires java.prefs;
 
