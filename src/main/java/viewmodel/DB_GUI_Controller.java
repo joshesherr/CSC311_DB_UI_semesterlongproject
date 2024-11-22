@@ -1,6 +1,8 @@
 package viewmodel;
 
 import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.models.BlobItem;
 import dao.DbConnectivityClass;
 import dao.StorageUploader;
 import javafx.application.Platform;
@@ -17,9 +19,9 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.Major;
@@ -27,6 +29,8 @@ import model.Person;
 import model.Validator;
 import service.MyLogger;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
@@ -38,6 +42,8 @@ public class DB_GUI_Controller implements Initializable {
 
     public ProgressIndicator progressIndicator;
     public ProgressBar progressBar;
+    public Label imageName;
+    public Button imageBtn;
     @FXML
     Label errorText;
     StorageUploader store = new StorageUploader();
@@ -48,7 +54,7 @@ public class DB_GUI_Controller implements Initializable {
     @FXML
     ComboBox<String> major;
     @FXML
-    ImageView img_view;
+    ImageView imageView;
     @FXML
     MenuBar menuBar;
     @FXML
@@ -60,6 +66,7 @@ public class DB_GUI_Controller implements Initializable {
     private final DbConnectivityClass cnUtil = new DbConnectivityClass();
     private final ObservableList<Person> data = cnUtil.getData();
     private boolean formDisabled=false;
+    private File selectedImageFile=null;
 
     /*
     ToDo 1. Disable the "Edit" and "Delete" button unless a record is selected from the table view.
@@ -82,6 +89,7 @@ public class DB_GUI_Controller implements Initializable {
         }
 
         tv.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        imageView.setClip(new Circle(45,45,45));
 
         ObservableList<String> li = FXCollections.observableArrayList();
         for (Major v :  Major.values()) li.add(v.getMajorName());
@@ -90,7 +98,6 @@ public class DB_GUI_Controller implements Initializable {
         major.getEditor().setOnKeyTyped(e->{
             inputFieldUpdated();
         });
-
         progressIndicator.progressProperty().bind(progressBar.progressProperty());
     }
 
@@ -128,10 +135,11 @@ public class DB_GUI_Controller implements Initializable {
 
     @FXML
     protected void addNewRecord() {
-        Person p = new Person(first_name.getText(), last_name.getText(), department.getText(), Major.values()[major.getSelectionModel().getSelectedIndex()], email.getText(), imageURL.getText());
+        Person p = new Person(first_name.getText(), last_name.getText(), department.getText(), Major.values()[major.getSelectionModel().getSelectedIndex()], email.getText(), selectedImageFile!=null?selectedImageFile.getName():"");
         addNewRecord(p);
     }
     private void addNewRecord(Person p) {
+        uploadImage(selectedImageFile);
         Task<Boolean> insertTask = cnUtil.insertUser(p);
         errorText.textProperty().bind(insertTask.messageProperty());
 
@@ -144,9 +152,7 @@ public class DB_GUI_Controller implements Initializable {
             enableForm();
         });
         insertTask.setOnCancelled(s->enableForm());
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        executorService.execute(insertTask); // start the task
-        executorService.shutdown();
+        new Thread(insertTask).start();
     }
 
     @FXML
@@ -156,7 +162,7 @@ public class DB_GUI_Controller implements Initializable {
         department.setText("");
         major.getSelectionModel().clearSelection();
         email.setText("");
-        imageURL.setText("");
+        imageName.setText("");
         addBtn.setDisable(true);
         editBtn.setDisable(true);
         deleteBtn.setDisable(true);
@@ -168,7 +174,9 @@ public class DB_GUI_Controller implements Initializable {
         Person p = tv.getSelectionModel().getSelectedItem();
         int index = data.indexOf(p);
         Person p2 = new Person(index + 1, first_name.getText(), last_name.getText(), department.getText(),
-                Major.values()[major.getSelectionModel().getSelectedIndex()], email.getText(),  imageURL.getText());
+                Major.values()[major.getSelectionModel().getSelectedIndex()], email.getText(), selectedImageFile!=null?selectedImageFile.getName():"");
+
+        uploadImage(selectedImageFile);
 
         Task<Boolean> editTask = cnUtil.editUser(p.getId(), p2);
         errorText.textProperty().bind(editTask.messageProperty());
@@ -183,9 +191,7 @@ public class DB_GUI_Controller implements Initializable {
             tv.getSelectionModel().select(index);
         });
         editTask.setOnCancelled(s->enableForm());
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        executorService.execute(editTask); // start the task
-        executorService.shutdown();
+        new Thread(editTask).start();
     }
 
     @FXML
@@ -206,26 +212,41 @@ public class DB_GUI_Controller implements Initializable {
             enableForm();
         });
         deleteTask.setOnCancelled(s->enableForm());
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        executorService.execute(deleteTask); // start the task
-        executorService.shutdown();
+        new Thread(deleteTask).start();
     }
 
     @FXML
     protected void showImage() {
-        File file = (new FileChooser()).showOpenDialog(img_view.getScene().getWindow());
-        if (file != null) {
-            img_view.setImage(new Image(file.toURI().toString()));
-            Task<Void> uploadTask = createUploadTask(file, progressBar);
-            progressBar.progressProperty().bind(uploadTask.progressProperty());
-            new Thread(uploadTask).start();
+        selectedImageFile = (new FileChooser()).showOpenDialog(imageView.getScene().getWindow());
+        if (selectedImageFile == null) {
+            imageName.setText("");
+        }
+        else if (Validator.validate(selectedImageFile.getName(),Validator.IMAGE_URL)!=0) {// If the image is not valid clear selection.
+            errorText.textProperty().unbind();
+            errorText.setText("Invalid image file.");
+            selectedImageFile=null;
+            imageName.setText("");
+        }
+        else {
+            imageName.setText(selectedImageFile.getName());
         }
     }
 
-    private Task<Void> createUploadTask(File file, ProgressIndicator progressBar) {
+    private void uploadImage(File file) {
+        if (file==null) return;
+        Task<Void> uploadTask = uploadImageTask(file);
+        new Thread(uploadTask).start();
+        progressIndicator.progressProperty().bind(uploadTask.progressProperty());
+        uploadTask.setOnSucceeded(s->imageView.setImage(new Image(file.toURI().toString())));
+    }
+
+    private Task<Void> uploadImageTask(File file) {
         return new Task<>() {
             @Override
             protected Void call() throws Exception {
+
+                for (BlobItem b: store.getContainerClient().listBlobs()) if (b.getName().equals(file.getName())) return null;//If image exists already, do not add!!
+
                 BlobClient blobClient = store.getContainerClient().getBlobClient(file.getName());
                 long fileSize = Files.size(file.toPath());
                 long uploadedBytes = 0;
@@ -250,6 +271,29 @@ public class DB_GUI_Controller implements Initializable {
         };
     }
 
+    private void loadImage(String fileName) {
+        if (fileName==null) return;
+        Task<Image> loadTask = loadImageTask(fileName);
+        new Thread(loadTask).start();
+        loadTask.valueProperty().addListener((observable, oldValue, newValue) -> imageView.setImage(newValue));
+    }
+
+    private Task<Image> loadImageTask(String fileName) {
+        return new Task<>() {
+            @Override
+            protected Image call() throws Exception {
+                for (BlobItem b: store.getContainerClient().listBlobs()) {
+                    if (b.getName().equals(fileName)) {
+                        BlobClient blobClient = store.getContainerClient().getBlobClient(fileName);
+                        InputStream stream = blobClient.downloadContent().toStream();
+                        return new Image(stream);
+                    }
+                }
+                return new Image(getClass().getResource("/images/profile.png").toString());
+            }
+        };
+    }
+
     public void disableForm() {
         formDisabled = true;
         addBtn.setDisable(true);
@@ -259,7 +303,7 @@ public class DB_GUI_Controller implements Initializable {
         last_name.setDisable(true);
         department.setDisable(true);
         email.setDisable(true);
-        imageURL.setDisable(true);
+        imageBtn.setDisable(true);
         major.setDisable(true);
     }
     public void enableForm() {
@@ -269,7 +313,7 @@ public class DB_GUI_Controller implements Initializable {
         last_name.setDisable(false);
         department.setDisable(false);
         email.setDisable(false);
-        imageURL.setDisable(false);
+        imageBtn.setDisable(false);
         major.setDisable(false);
     }
 
@@ -279,7 +323,7 @@ public class DB_GUI_Controller implements Initializable {
     }
 
     @FXML
-    protected void selectedItemTV(MouseEvent mouseEvent) {
+    protected void selectedItemTV() {
         Person p = tv.getSelectionModel().getSelectedItem();
         if (p==null) return;
         if (isFormDisabled()) return;
@@ -288,7 +332,9 @@ public class DB_GUI_Controller implements Initializable {
         department.setText(p.getDepartment());
         major.setValue(p.getMajor().getMajorName());
         email.setText(p.getEmail());
-        imageURL.setText(p.getImageURL());
+        loadImage(p.getImageURL());
+        imageName.setText(p.getImageURL());
+        selectedImageFile = new File(p.getImageURL());
         formValidation();
     }
 
@@ -324,9 +370,9 @@ public class DB_GUI_Controller implements Initializable {
         dialog.setHeaderText("Please specify…");
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        TextField textField1 = new TextField("Name");
-        TextField textField2 = new TextField("Last Name");
-        TextField textField3 = new TextField("Email ");
+        TextField textField1 = new TextField(first_name.getText());
+        TextField textField2 = new TextField(last_name.getText());
+        TextField textField3 = new TextField(email.getText());
         ObservableList<Major> options =
                 FXCollections.observableArrayList(Major.values());
         ComboBox<Major> comboBox = new ComboBox<>(options);
@@ -353,7 +399,7 @@ public class DB_GUI_Controller implements Initializable {
             +  Validator.validate(department.getText(), Validator.DEPARTMENT)
             +  Validator.validate(major.getEditor().getText(), Validator.MAJOR)
             +  Validator.validate(email.getText(), Validator.EMAIL)
-            +  Validator.validate(imageURL.getText(), Validator.IMAGE_URL);
+            +  Validator.validate(imageName.getText(), Validator.IMAGE_URL);
         addBtn.setDisable(invalidBits!=0);// if any bits are set, disable the add and edit button
         editBtn.setDisable(tv.selectionModelProperty().get().isEmpty());
         deleteBtn.setDisable(tv.selectionModelProperty().get().isEmpty());
@@ -399,6 +445,7 @@ public class DB_GUI_Controller implements Initializable {
                         +  Validator.validate(email,  Validator.EMAIL)
                         +  Validator.validate(imageUrl,  Validator.IMAGE_URL);
                 if (invalidBits!=0) {
+                    errorText.textProperty().unbind();
                     errorText.setText("CSV Data is not valid. Invalid Info found in row "+lineNumber+". Check field(s): "+ Validator.invalidBitsToString(invalidBits));
                     MyLogger.makeLog("CSV Data is not valid.\n" + "Invalid Info: "+ Validator.invalidBitsToString(invalidBits));
                     return;
@@ -429,11 +476,8 @@ public class DB_GUI_Controller implements Initializable {
                 executorService2.shutdown();
 
             });
-            ExecutorService executorService1 = Executors.newFixedThreadPool(1);
-            executorService1.execute(deleteAllTask);
-            executorService1.shutdown();
             errorText.textProperty().bind(deleteAllTask.messageProperty());
-
+            new Thread(deleteAllTask).start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -476,10 +520,7 @@ public class DB_GUI_Controller implements Initializable {
 
         progressBar.progressProperty().bind(exportCSVTask.progressProperty());
         errorText.textProperty().bind(exportCSVTask.messageProperty());
-
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
-        executorService.execute(exportCSVTask);
-        executorService.shutdown();
+        new Thread(exportCSVTask).start();
     }
 
     public boolean isFormDisabled() {

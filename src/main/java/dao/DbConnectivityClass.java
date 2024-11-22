@@ -220,10 +220,8 @@ public class     DbConnectivityClass {
                     }
                 }
                 conn.close();
-                if (result) {
-                    updateProgress(1, 1);
-                    updateMessage("Insertion Successful!");
-                }
+                updateProgress(1, 1);
+                updateMessage("Insertion Successful!");
                 return result;
             }
         };

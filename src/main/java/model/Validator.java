@@ -26,7 +26,7 @@ public class Validator {
             case DEPARTMENT -> s.matches("^[^±!@£$%^&*_+§¡€#¢§¶•ªº«\\\\/<>?:;|=.,]+$")?0:(int)Math.pow(2,DEPARTMENT);
             case MAJOR -> {for (Major m : Major.values()) if (m.equals(s)) yield 0;yield (int)Math.pow(2,MAJOR);}
             case EMAIL -> s.matches("^(?!\\.)[\\w\\-_.]*[^.]@farmingdale.edu$")?0:(int)Math.pow(2,EMAIL);
-            case IMAGE_URL -> s.matches("([^?#]*\\/)?([^?#]*\\.([Jj][Pp][Ee]?[Gg]|[Pp][Nn][Gg]|[Gg][Ii][Ff]))(?:\\?([^#]*))?(?:#(.*))?$")?0:(int)Math.pow(2,IMAGE_URL);
+            case IMAGE_URL -> s.isEmpty() || s.matches("([^?#]*\\/)?([^?#]*\\.([Jj][Pp][Ee]?[Gg]|[Pp][Nn][Gg]|[Gg][Ii][Ff]))(?:\\?([^#]*))?(?:#(.*))?$")?0:(int)Math.pow(2,IMAGE_URL);
             default -> 0;
         };
     }

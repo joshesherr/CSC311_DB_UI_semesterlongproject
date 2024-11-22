@@ -5,6 +5,8 @@ import com.azure.storage.blob.BlobClientBuilder;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
 
+import java.io.File;
+
 public class StorageUploader {
 
     private BlobContainerClient containerClient;
@@ -27,6 +29,13 @@ public class StorageUploader {
         blobClient.uploadFromFile(filePath);
         //blobClient.uploadFromFileWithResponse(filePath);
     }
+
+    public void loadFile(String filePath, String blobName) {
+        BlobClient blobClient = containerClient.getBlobClient(blobName);
+        blobClient.downloadContent();
+        //blobClient.uploadFromFileWithResponse(filePath);
+    }
+
     public BlobContainerClient getContainerClient(){
         return containerClient;
     }
