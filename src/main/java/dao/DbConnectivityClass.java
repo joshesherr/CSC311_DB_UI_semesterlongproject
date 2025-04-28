@@ -13,10 +13,10 @@ import java.util.List;
 public class     DbConnectivityClass {
     final static String DB_NAME="CSC311_BD_TEMP";
     MyLogger lg= new MyLogger();
-    final static String SQL_SERVER_URL = "jdbc:mysql://csc311sherryserver.mysql.database.azure.com/";
+    final static String SQL_SERVER_URL = "";
     final static String DB_URL = SQL_SERVER_URL+DB_NAME;
-    final static String USERNAME = "joshesherr";
-    final static String PASSWORD = "sherr24#?";
+    final static String USERNAME = "";
+    final static String PASSWORD = "";
 
     private final ObservableList<Person> data = FXCollections.observableArrayList();
 
